@@ -7,28 +7,67 @@
 
 using namespace std;
 
-const int MAX_SIZE = 1000000;
+const int MAX_SIZE = 1000;
 
-int taglia(int n, int tagliere []) {
-	int* combinations = new int[MAX_SIZE];
-	int* last_seen = new int[MAX_SIZE];
-	int* sum_prefix = new int[MAX_SIZE];
-	int current_back;
-	
-	current_back = 1;
-	combinations[0] = 1;	
-	sum_prefix[0] = 1;
-	
-	for (int i = 1; i < n; i++){
-		last_seen[tagliere[i]] = i;
-		cout << last_seen[tagliere[i]] << endl;
-		current_back = max(current_back, last_seen[tagliere[i]]);
-		combinations[i] = sum_prefix[i] - sum_prefix[current_back-1];
-		sum_prefix[i] = sum_prefix[i-1] + combinations[i];
-		cout << sum_prefix[i] << endl;
-		cout << endl;
+int taglia(int N, int V[]) {
+	int combinations[MAX_SIZE];
+	int last_seen[MAX_SIZE];
+	int prefixSum[MAX_SIZE];
+	int curr_back = -1;
+
+	for (int i = 0; i < MAX_SIZE; i++) {
+		last_seen[i] = -1;
 	}
-	return combinations[n-1];
+
+	combinations[0] = 1;
+	last_seen[V[0]] = 0;
+	prefixSum[0] = 1;
+
+	for (int i = 1; i < N; i++) {
+		curr_back = max(last_seen[V[i]], curr_back);
+
+		if (curr_back < 0) {
+			combinations[i] = (prefixSum[i - 1] + 1) % 1000000007;
+		} else if (curr_back == 0) {
+			combinations[i] = prefixSum[i - 1] % 1000000007;
+		} else {
+			combinations[i] = (prefixSum[i - 1]  - prefixSum[max(curr_back - 1, 0)] + 1000000007) % 1000000007;
+		}
+		prefixSum[i] = (combinations[i] + prefixSum[i - 1]) % 1000000007;
+		last_seen[V[i]] = i;
+	}
+
+	return combinations[N - 1];
+}
+
+
+int tagliaFinal(int, int[]);
+int tagliaFinal(int N, int V[]) {
+    int combinations[MAX_SIZE + 1] = { 0 };
+    int last_seen[MAX_SIZE];
+    int prefixSum[MAX_SIZE + 2] = { 0 };
+    bool canSum = true;
+    int curr_back = -1;
+
+    for (int i = 0; i < MAX_SIZE; i++) {
+        last_seen[i] = 0;
+    }
+
+    combinations[0] = 1;
+    prefixSum[0] = 0;
+    prefixSum[1] = 1;
+
+    for (int i = 1; i <= N; i++) {
+        curr_back = max(last_seen[V[i - 1]] - 1, curr_back);
+
+        combinations[i] = (prefixSum[i] - prefixSum[curr_back + 1] + 1000000007) % 1000000007;
+
+        prefixSum[i + 1] = (combinations[i] + prefixSum[i]) % 1000000007;
+
+        last_seen[V[i - 1]] = i;
+    }
+
+    return combinations[N];
 }
 
 int main() {
@@ -36,16 +75,16 @@ int main() {
 	int n;
 	file >> n; // Leggi la lunghezza dell'array
 
-	int* tagliere = new int[n]; // Allocazione di un array di dimensione n
+	int tagliere[n]; // Allocazione di un array di dimensione n
 
 	for (int i = 0; i < n; ++i) {
 		file >> tagliere[i]; // Leggi gli elementi dell'array uno per uno
 	}
 	
 	file.close();
-
+	
 	ofstream outputFile("output.txt");
-	cout << taglia(n, tagliere); // Passa l'array di interi alla funzione taglia
+	cout << tagliaFinal(n, tagliere); // Passa l'array di interi alla funzione taglia
 
 	return 0;
 }
