@@ -6,9 +6,9 @@ using namespace std;
 vector<int> dailyTemperatures(vector<int>& temperatures) {
 	vector<int> ris(temperatures.size(), 0); // Inizializza il vettore dei risultati con dimensione uguale a quello delle temperature
 
-	for (size_t i = 0; i < temperatures.size() - 1; i++) {
+	for (int i = 0; i < temperatures.size() - 1; i++) {
 		int day_to_wait = 0;
-		for (size_t j = i + 1; j < temperatures.size(); j++) {
+		for (int j = i + 1; j < temperatures.size(); j++) {
 			if (temperatures[j] > temperatures[i]) {
 				day_to_wait++;
 				ris[i] = day_to_wait;
