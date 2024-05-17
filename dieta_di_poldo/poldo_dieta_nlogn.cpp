@@ -50,37 +50,30 @@ int dieta_poldo(int n, vector<int> numbers)
 	return index_fin+1;
 }
 
-vector<int> poldoMania(int n, vector<int> panini){
-	if(n == 6){
-		cout << "3 3 3 3 3 2" << endl;
-		}
-	else {
-		cout << "6 6 5 6 4 6 3 6 3 6" << endl;
-	}
-	return panini;
-}
-
-void printArray(vector<int> array){
-	for (int i = 0; i < array.size(); i++){
-		cout << array[i] << " ";
-	}
-}
-
 int main(){
-	
-	int n_instances;
-	cin >> n_instances;
-	int N;
+	ifstream inputFile("input.txt");
 
-	for (int i = 0; i < n_instances; i++){
-		cin >> N;
-		vector<int> panini(N,0);
-		for(int i = 0; i < N; ++i) {
-			cin >> panini[i];
-		}
-		vector<int> result = poldoMania(N, panini);
-		// printArray(result);
+	int N;
+	inputFile >> N;
+
+	vector<int> panini(N,0);
+
+	for (int i = 0; i < N; ++i){
+		inputFile >> panini[i];
 	}
+
+	inputFile.close();
+	ofstream outputFile("output.txt");
+	
+	cout << panini[0];
+
+	if (N == 0){
+		outputFile << N;
+	}
+	if (N == 1){
+		outputFile << N;
+	}
+	outputFile << dieta_poldo(N, panini);
 
 	return 0;
 }
