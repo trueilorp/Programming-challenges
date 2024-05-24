@@ -6,6 +6,13 @@
 using namespace std;
 const int SIZE = 10000;
 
+void printArray(vector<int> array){
+	int n = array.size();
+	for (int i = 0; i < n; i++){
+		cout << array[i] << " ";
+	}
+}
+
 int calc_dim(vector<int> array){
 	int length = 0;
 	int size = array.size();
@@ -36,34 +43,63 @@ int binary_search(vector<int>& vec, int target) {
 	return left; // Elemento non trovato, restituire l'indice del primo elemento maggiore di target
 }
 
-int dieta_poldo(int n, vector<int> numbers)
-{
-	vector<int> heads(n,-1);
-
-	heads[0] = numbers[0];
-	int index_fin = 0;
-	for (int i = 0; i < n; i++){
-		int index = binary_search(heads, numbers[i]);
-		heads[index] = numbers[i];
-		index_fin = index;
+int dieta_poldo_pref(vector<int> numbers){
+	int n = numbers.size();
+	vector<int> tails;
+	tails.push_back(numbers[0]); 
+	int final_index = 1;
+	
+	for (int i = 1; i < n; i++) {
+		if (numbers[i] > tails.back()) {
+			tails.push_back(numbers[i]);
+			final_index = i;
+		} else {
+			int index = binary_search(tails, numbers[i]);
+			tails[index] = numbers[i];
+			final_index = index;
+		}
 	}
-	return index_fin+1;
+	
+	return final_index;
+}
+
+int dieta_poldo_suff(vector<int> numbers){
+	int n = numbers.size();
+	// Giro l'array, metto i numeri negativi e cerco sempre la crescente
+	reverse(numbers.begin(), numbers.end());
+	for (int i = 0; i < n; i++){
+		numbers[i] = numbers[i] * -1;
+	}
+	
+	vector<int> tails;
+	tails.push_back(numbers[0]); 
+	int final_index = 1;
+	
+	for (int i = 1; i < n; i++) {
+		if (numbers[i] > tails.back()) {
+			tails.push_back(numbers[i]);
+			final_index = i;
+		} else {
+			int index = binary_search(tails, numbers[i]);
+			tails[index] = numbers[i];
+			final_index = index+1;
+		}
+	}
+	return final_index;
 }
 
 vector<int> poldoMania(int n, vector<int> panini){
-	if(n == 6){
-		cout << "3 3 3 3 3 2" << endl;
-		}
-	else {
-		cout << "6 6 5 6 4 6 3 6 3 6" << endl;
+	vector<int> result (n,-1);
+	
+	for (int i = 0; i < n; i++){
+		vector<int> prefix(panini.begin(), panini.begin() + i + 1);
+		vector<int> suffix(panini.begin() + i, panini.end());
+		int result_pre = dieta_poldo_pref(prefix);
+		int result_suf = dieta_poldo_suff(suffix);
+		cout << result_pre << " " << result_suf << endl;
+		result[i] = result_pre + result_suf - 1;
 	}
-	return panini;
-}
-
-void printArray(vector<int> array){
-	for (int i = 0; i < array.size(); i++){
-		cout << array[i] << " ";
-	}
+	return result;
 }
 
 int main(){
@@ -79,7 +115,8 @@ int main(){
 			cin >> panini[i];
 		}
 		vector<int> result = poldoMania(N, panini);
-		// printArray(result);
+		printArray(result);
+		cout << endl;
 	}
 
 	return 0;

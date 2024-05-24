@@ -36,18 +36,21 @@ int binary_search(vector<int>& vec, int target) {
 	return left; // Elemento non trovato, restituire l'indice del primo elemento maggiore di target
 }
 
-int dieta_poldo(int n, vector<int> numbers)
-{
-	vector<int> heads(n,-1);
-
-	heads[0] = numbers[0];
-	int index_fin = 0;
-	for (int i = 0; i < n; i++){
-		int index = binary_search(heads, numbers[i]);
-		heads[index] = numbers[i];
-		index_fin = index;
+int dieta_poldo(int n, vector<int> numbers){
+	int n = numbers.size();
+	vector<int> tails;
+	tails.push_back(numbers[0]); 
+	
+	for (int i = 1; i < n; i++) {
+		if (numbers[i] > tails.back()) {
+			tails.push_back(numbers[i]);
+		} else {
+			int index = binary_search(tails, numbers[i]);
+			tails[index] = numbers[i];
+		}
 	}
-	return index_fin+1;
+	
+	return tails.size();
 }
 
 int main(){
