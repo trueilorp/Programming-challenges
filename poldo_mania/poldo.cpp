@@ -56,7 +56,7 @@ int dieta_poldo_pref(vector<int> numbers){
 		} else {
 			int index = binary_search(tails, numbers[i]);
 			tails[index] = numbers[i];
-			final_index = index;
+			final_index = index+1;
 		}
 	}
 	
