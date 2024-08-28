@@ -9,9 +9,8 @@ typedef struct result
 {
 	vector<int> dist;
 	vector<int> dad;
-	int ntrees;
+	long ntrees;
 }res;
-
 
 void printVector(const vector<int>& vec) {
 	for (size_t i = 0; i < vec.size(); ++i) {
@@ -23,13 +22,22 @@ void printVector(const vector<int>& vec) {
 	cout << endl;
 }
 
+void printVector(const vector<vector<int>>& vec) {
+	for (const auto& riga : vec) {
+		for (const auto& elemento : riga) {
+			std::cout << elemento << ' ';
+		}
+		std::cout << std::endl; 
+	}
+}
+
 // Function to perform Breadth First Search on a graph
 // represented using adjacency list
 result bfs(int N, vector<vector<int>> adjList, int startNode)
 {
 	result res;
 	
-	int ntrees = 1;
+	long ntrees = 1;
 	
 	// Create a vector for mark the visited nodes
 	vector<bool> visited(N,false);
@@ -42,6 +50,9 @@ result bfs(int N, vector<vector<int>> adjList, int startNode)
 	
 	// Create a vector to store dads
 	vector<int> dads(N,0);
+	
+	// Create a vector to store number of dads for each node
+	vector<long> ndads(N,1);
 
 	// Mark the current node as visited and enqueue it
 	visited[startNode] = true;
@@ -66,55 +77,61 @@ result bfs(int N, vector<vector<int>> adjList, int startNode)
 			}else{
 				// vuol dire che è gia stato visitato, e quindi ha un padre, se le distanze dei padri sono uguali allora *2
 				if(distances[dads[neighbor]] == distances[currentNode]){
-					ntrees = ((ntrees % 1000000007) * 2) % 1000000007;
+					ndads[neighbor]++;
 				}
 			}
 		}
 	}
+	
+	for (int i = 0; i < ndads.size(); i++){
+		ntrees = ((ntrees % 1000000007) * (ndads[i] % 1000000007)) % 1000000007;
+	}
+	
 	res.dist = distances;
 	res.dad = dads;
 	res.ntrees = ntrees;
 	return res;
 }
 
-// Funzione che risolve il problema (questa è solo un placeholder, la logica reale deve essere implementata)
-void solve(int n, const vector<vector<int>> out_nei) {
-	// Implementa la tua logica qui
-	result res = bfs(n, out_nei, 0);
-	vector<int> dist = res.dist;
-	vector<int> dads = res.dad;
-	int num_BFStrees = res.ntrees; // Placeholder value
+int numero_passi(vector<vector<int>> archi, int numero_archi, int nodi){
+	int passi = 0;
+	int current_node = 0;
 	
-	// Output placeholder (stampa l'output reale in base alla logica della funzione)
-	//cout << "Distances: ";
-	for (int d : dist) {
-		cout << d << " ";
-	}
-	cout << endl;
-
-	//cout << "Dads: ";
-	for (int d : dads) {
-		cout << d << " ";
-	}
-	cout << endl;
-
-	cout << num_BFStrees%1000000007 << endl;
+	do{ //gestire i casi che ho già visitato
+		for (int i = 0; i < numero_archi; i++){
+			if(archi[i][0] == current_node){
+				current_node = archi[i][1];
+				passi++;
+			}
+			if(current_node == 0 && i!=0){
+				break;
+			}
+		}
+	}while(passi % 2 == 0);
+	
+	return passi;
 }
 
-int main() {
-	int T;
-	cin >> T;
+int main(){
+	int n_instances;
+	cin >> n_instances;
+	
+	for (int instance = 0; instance < n_instances; instance++){
 
-	for (int t = 1; t <= T; ++t) {
-		int n, m;
-		cin >> n >> m;
-		vector<vector<int>> out_nei(n);
-		for (int i = 0; i < m; ++i) {
-			int u, v;
+		int nodi, numero_archi;
+		cin >> nodi;
+		cin >> numero_archi;
+		
+		vector<vector<int>> archi(numero_archi);
+		for (int i = 0; i < numero_archi; i++){
+			int u,v;
 			cin >> u >> v;
-			out_nei[u].push_back(v);
-		}
-		solve(n, out_nei);
+			archi[i].push_back(u);
+			archi[i].push_back(v);
+		}	
+		//printVector(archi);
+		int n_passi = numero_passi(archi, numero_archi, nodi);
+		cout << "NUMERO PASSI TOTALI: " << n_passi << endl;
 	}
-	return 0;
+	//printVector(archi);
 }
