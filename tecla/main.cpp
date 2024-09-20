@@ -2,6 +2,8 @@
 #include <vector>
 #include <utility>
 #include <queue>
+#include <algorithm>
+#include <unordered_set>
 
 using namespace std;
 
@@ -11,6 +13,73 @@ typedef struct result
 	vector<int> dad;
 	long ntrees;
 }res;
+
+typedef struct passi_percorso
+{
+	int passi;
+	vector<int> percorso;
+}pp;
+
+// Funzione per trovare il percorso del ciclo a partire dal nodo 'start_nodo'
+vector<int> trova_percorso(const vector<int>& ciclo_stack, int start_nodo) {
+	vector<int> percorso;
+	bool aggiungi = false;
+
+	for (int nodo : ciclo_stack) {
+		if (nodo == start_nodo) {
+			aggiungi = true;
+		}
+		if (aggiungi) {
+			percorso.push_back(nodo);
+		}
+	}
+	percorso.push_back(start_nodo);  // Chiude il ciclo tornando al nodo iniziale
+	return percorso;
+}
+
+// DFS modificata per rilevare il ciclo
+bool dfs(int nodo, const vector<vector<int>>& grafo, unordered_set<int>& visitato, unordered_set<int>& nello_stack, vector<int>& ciclo_stack, vector<int>& ciclo) {
+	visitato.insert(nodo);
+	nello_stack.insert(nodo);
+	ciclo_stack.push_back(nodo);
+
+	for (int vicino : grafo[nodo]) {
+		if (nello_stack.count(vicino)) {
+			// Trovato ciclo: trova il percorso del ciclo
+			ciclo = trova_percorso(ciclo_stack, vicino);
+			return true;
+		}
+
+		if (!visitato.count(vicino)) {
+			if (dfs(vicino, grafo, visitato, nello_stack, ciclo_stack, ciclo)) {
+				return true;
+			}
+		}
+	}
+
+	// Rimuovi nodo dallo stack di ricorsione e dal ciclo corrente
+	nello_stack.erase(nodo);
+	ciclo_stack.pop_back();
+	return false;
+}
+
+// Funzione principale per trovare un ciclo nel grafo
+vector<int> trova_ciclo(const vector<vector<int>>& grafo) {
+	unordered_set<int> visitato;
+	unordered_set<int> nello_stack;
+	vector<int> ciclo_stack;
+	vector<int> ciclo;
+
+	for (int nodo = 0; nodo < grafo.size(); nodo++) {
+		if (!visitato.count(nodo)) {
+			if (dfs(nodo, grafo, visitato, nello_stack, ciclo_stack, ciclo)) {
+				return ciclo;
+			}
+		}
+	}
+
+	return {};  // Nessun ciclo trovato
+}
 
 void printVector(const vector<int>& vec) {
 	for (size_t i = 0; i < vec.size(); ++i) {
@@ -31,85 +100,57 @@ void printVector(const vector<vector<int>>& vec) {
 	}
 }
 
-// Function to perform Breadth First Search on a graph
-// represented using adjacency list
-result bfs(int N, vector<vector<int>> adjList, int startNode)
-{
-	result res;
+// passi_percorso numero_passi(vector<vector<int>> archi, int numero_archi, int nodi){
+// 	passi_percorso pas_perc;
+// 	int passi = 0;
+// 	int current_node = 0;
+// 	vector <int> nodi_visitati;
+// 	nodi_visitati.push_back(0);
 	
-	long ntrees = 1;
+// 	do{ //gestire i casi che ho già visitato
+// 		for (int i = 0; i < numero_archi; i++){
+// 			if(archi[i][0] == current_node){
+// 				current_node = archi[i][1];
+// 				passi++;
+// 				nodi_visitati.push_back(current_node);
+// 			}
+// 			if(current_node == 0 && i!=0){
+// 				break;
+// 			}
+// 		}
+// 	}while(passi % 2 == 0);
 	
-	// Create a vector for mark the visited nodes
-	vector<bool> visited(N,false);
+// 	pas_perc.passi = passi;
+// 	reverse(nodi_visitati.begin(), nodi_visitati.end());
+// 	pas_perc.percorso = nodi_visitati;
+// 	return pas_perc;
 	
-	// Create a queue for BFS
-	queue<int> q;
-	
-	// Create a vector to store the distances
-	vector<int> distances(N,0);
-	
-	// Create a vector to store dads
-	vector<int> dads(N,0);
-	
-	// Create a vector to store number of dads for each node
-	vector<long> ndads(N,1);
+// 	result res = bfs(nodi, archi, 0);
+// 	vector<int> distanze = res.dist;
+// }
 
-	// Mark the current node as visited and enqueue it
-	visited[startNode] = true;
-	q.push(startNode);
-
-	// Iterate over the queue
-	while (!q.empty()) {
-		// Dequeue a vertex from queue and print it
-		int currentNode = q.front();
-		q.pop();
-		// cout << currentNode << " ";
-
-		// Get all adjacent vertices of the dequeued vertex
-		// currentNode If an adjacent has not been visited,
-		// then mark it visited and enqueue it
-		for (int neighbor : adjList[currentNode]) {
-			if (!visited[neighbor]) {
-				visited[neighbor] = true;
-				q.push(neighbor);
-				distances[neighbor] = distances[currentNode] + 1;
-				dads[neighbor] = currentNode;
-			}else{
-				// vuol dire che è gia stato visitato, e quindi ha un padre, se le distanze dei padri sono uguali allora *2
-				if(distances[dads[neighbor]] == distances[currentNode]){
-					ndads[neighbor]++;
-				}
-			}
-		}
-	}
-	
-	for (int i = 0; i < ndads.size(); i++){
-		ntrees = ((ntrees % 1000000007) * (ndads[i] % 1000000007)) % 1000000007;
-	}
-	
-	res.dist = distances;
-	res.dad = dads;
-	res.ntrees = ntrees;
-	return res;
-}
-
-int numero_passi(vector<vector<int>> archi, int numero_archi, int nodi){
+passi_percorso numero_passi_e_percorso(vector<vector<int>> grafo, int numero_archi, int nodi){
 	int passi = 0;
-	int current_node = 0;
-	
-	do{ //gestire i casi che ho già visitato
-		for (int i = 0; i < numero_archi; i++){
-			if(archi[i][0] == current_node){
-				current_node = archi[i][1];
-				passi++;
-			}
-			if(current_node == 0 && i!=0){
-				break;
-			}
-		}
+	vector<int> ciclo;
+	do{
+		ciclo = trova_ciclo(grafo);
+		passi = ciclo.size() - 1;
 	}while(passi % 2 == 0);
 	
-	return passi;
+	passi_percorso pas_perc;
+	pas_perc.passi = passi;
+	pas_perc.percorso = ciclo;
+	
+	return pas_perc;
+}
+
+// Funzione per costruire il grafo da una lista di archi
+vector<vector<int>> costruisci_grafo(int num_nodi, const vector<vector<int>>& archi) {
+	vector<vector<int>> grafo(num_nodi);
+	for (const auto& arco : archi) {
+		grafo[arco[0]].push_back(arco[1]);
+	}
+	return grafo;
 }
 
 int main(){
@@ -129,9 +170,15 @@ int main(){
 			archi[i].push_back(u);
 			archi[i].push_back(v);
 		}	
+		
+		vector<vector<int>> grafo = costruisci_grafo(nodi, archi);
+		passi_percorso res = numero_passi_e_percorso(grafo, numero_archi, nodi);
+		cout << res.passi << endl;
+		printVector(res.percorso);
 		//printVector(archi);
-		int n_passi = numero_passi(archi, numero_archi, nodi);
-		cout << "NUMERO PASSI TOTALI: " << n_passi << endl;
+		//passi_percorso res = numero_passi(archi, numero_archi, nodi);
+		//cout << res.passi << endl;
+		//printVector(res.percorso);
 	}
 	//printVector(archi);
 }
