@@ -2,7 +2,6 @@
 #include <vector>
 #include <cassert>
 #include <string>
-#include <iomanip>
 
 using namespace std;
 
@@ -71,15 +70,9 @@ countsWB countWhiteBlack(int n, vector<string>& guelfis) {
 	return counts;
 }
 
-// You need to define or adapt your `get_doomed` and `save_Ryan` functions here.
-// I assume they are already defined as per your previous code.
-// Insert or replace with your actual implementation.
 vector<int> get_doomed(vector<string>& guelfis, int n) {
 	vector<int> doomed(n, 0);  // Replace with the actual logic
 	countsWB counts_white_black = countWhiteBlack(n, guelfis); 
-	
-	// printMatrix(n, counts_white_black.counts_before, "BEFORE");
-	// printMatrix(n, counts_white_black.counts_after, "AFTER");
 	
 	for (int i = 0; i < n; i++){
 		if(guelfis[i] == "D"){
@@ -97,7 +90,6 @@ vector<int> get_doomed(vector<string>& guelfis, int n) {
 }
 
 vector<int> save_Ryan(vector<string>& guelfis, int n, int soldato_ryan_index) {
-	// Placeholder function for save_Ryan logic
 	vector<int> plan4Ryan(n, 0);  // Replace with the actual logic
 
 	plan4Ryan[soldato_ryan_index] = -1;
@@ -110,47 +102,51 @@ vector<int> save_Ryan(vector<string>& guelfis, int n, int soldato_ryan_index) {
 	int nBlackAfter = guelfis_after[0][soldato_ryan_index];
 	int nWhiteAfter = guelfis_after[1][soldato_ryan_index];
 	
-	
-	vector<string> guelfis_kill = guelfis;
 	int time_limit_sx = nBlackBefor;
 	int current_time_sx = 0;
 	int jump = 1;
 	
+	// Inserisco gli O per i Defunti
+	for (int i = 0; i < n; i++){
+		if(guelfis[i] == "D"){
+			plan4Ryan[i] = 0;
+		}
+	}
+	
 	// Scorro l'array a sx		
 	while (current_time_sx != time_limit_sx){
-		for (int i = soldato_ryan_index - 1; i > 0; i--){
-			if((guelfis_kill[i] != "-") && (guelfis_kill[i - (1*jump)] != "-")){
-				if(guelfis_kill[i] != guelfis_kill[i - (1*jump)]){
+		for (int i = soldato_ryan_index - 1; i >= jump; i--){
+			if((guelfis[i] != "-") && (guelfis[i - jump] != "-") && (guelfis[i] != "D") && (guelfis[i - jump] != "D")){
+				if(guelfis[i] != guelfis[i - jump]){
 					current_time_sx++;
 					plan4Ryan[i] = current_time_sx;
-					plan4Ryan[i - (1*jump)] = current_time_sx;
-					guelfis_kill[i] = "-";
-					guelfis_kill[i - (1*jump)] = "-";
+					plan4Ryan[i - jump] = current_time_sx;
+					guelfis[i] = "-";
+					guelfis[i - jump] = "-";
 				}
 			}
 		}
-		jump = jump + 2;
+		jump++;
 	}
 	
 	jump = 1;
 	int current_time_dx = current_time_sx;
 	int time_limit_dx = nBlackAfter + current_time_sx;
 	
-	
 	// Scorro l'array a dx
 	while (current_time_dx != time_limit_dx){
-		for (int i = soldato_ryan_index + 1; i < n; i++){
-			if((guelfis_kill[i] != "-") && (guelfis_kill[i + (1*jump)] != "-")){
-				if(guelfis_kill[i] != guelfis_kill[i + (1*jump)]){
+		for (int i = soldato_ryan_index + 1; i < n - jump; i++){
+			if((guelfis[i] != "-") && (guelfis[i + jump] != "-") && (guelfis[i] != "D") && (guelfis[i + jump] != "D")){
+				if(guelfis[i] != guelfis[i + jump]){
 					current_time_dx++;
 					plan4Ryan[i] = current_time_dx;
-					plan4Ryan[i + (1*jump)] = current_time_dx;
-					guelfis_kill[i] = "-";
-					guelfis_kill[i + (1*jump)] = "-";
+					plan4Ryan[i + jump] = current_time_dx;
+					guelfis[i] = "-";
+					guelfis[i + jump] = "-";
 				}
 			}
 		}
-		jump = jump + 2;
+		jump++;
 	}
 	
 	return plan4Ryan;
@@ -186,6 +182,11 @@ int main(int argc, char* argv[]) {
 		}
 
 		vector<int> doomed = get_doomed(c, n);
+		// vector<int> plan4Ryan(n);
+		// for (int i = 0; i < n; i++){
+		// 	plan4Ryan[i] = i+1;
+		// }
+		
 		vector<int> plan4Ryan = save_Ryan(c, n, y);
 		
 		ostream* fouts[] = {&cout};
@@ -194,31 +195,27 @@ int main(int argc, char* argv[]) {
 			fouts[1] = &cout;
 		}
 
-		int width = 1;
-		for (auto& val : plan4Ryan) {
-			width = max(width, static_cast<int>(to_string(val).length()));
-		}
-		++width;
-
 		for (auto& fout : fouts) {
 			for (int val : doomed) {
-				*fout << setw(width) << val;
+				*fout << val << " ";
 			}
 			*fout << endl;
 
 			for (const auto& str : c) {
-				*fout << setw(width) << str;
+				*fout << str << " ";
 			}
 			*fout << endl;
 
 			for (int val : plan4Ryan) {
-				*fout << setw(width) << val;
+				*fout << val << " ";
 			}
 			*fout << endl;
 		}
+		
+		doomed.clear();
+		plan4Ryan.clear();
+		
 	}
 
 	return 0;
 }
-
-

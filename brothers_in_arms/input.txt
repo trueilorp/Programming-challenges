@@ -1,0 +1,18 @@
+2
+9
+B B N N B B N N B
+4
+14
+D B B N N N D B B N N B B D
+8
+
+
+1
+9
+B B N N B B N N B
+4
+
+1
+14
+D B B N N N D B B N N B B D
+8
